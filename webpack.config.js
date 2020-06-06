@@ -19,7 +19,9 @@ const jsLoaders = () => {
     },
   ];
 
-  if (isDev) loaders.push('eslint-loader');
+  if (isDev) {
+    loaders.push('eslint-loader');
+  }
 
   return loaders;
 };
@@ -39,7 +41,7 @@ module.exports = {
       '@core': path.resolve(__dirname, 'src/core'),
     },
   },
-  devtool: isDev ? 'eval-source-map' : false,
+  devtool: isDev ? 'source-map' : false,
   devServer: {
     port: 3000,
     hot: isDev,
@@ -49,18 +51,19 @@ module.exports = {
     new HTMLWebpackPlugin({
       template: 'index.html',
       minify: {
-        removeComments: true,
+        removeComments: isProd,
+        collapseWhitespace: isProd,
       },
     }),
-    new CopyPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'src/favicon.ico'),
-          to: path.resolve(__dirname, 'dist'),
-        },
-      ],
+    new CopyPlugin([
+      {
+        from: path.resolve(__dirname, 'src/favicon.ico'),
+        to: path.resolve(__dirname, 'dist'),
+      },
+    ]),
+    new MiniCssExtractPlugin({
+      filename: filename('css'),
     }),
-    new MiniCssExtractPlugin({ filename: filename('css') }),
   ],
   module: {
     rules: [
@@ -69,11 +72,12 @@ module.exports = {
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
-            options: { hmr: isDev, reloadAll: true },
+            options: {
+              hmr: isDev,
+              reloadAll: true,
+            },
           },
-          // Translates CSS into CommonJS
           'css-loader',
-          // Compiles Sass to CSS
           'sass-loader',
         ],
       },
